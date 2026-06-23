@@ -2,16 +2,31 @@
 <html lang="en-us">
 
 <head>
-	<script>
-		const url = new URL(window.location.href);
-		const nombreParametro = 'lang';
-		const valorParametro = 'en';
-		if (url.searchParams.get(nombreParametro) !== valorParametro) {
-			url.searchParams.set(nombreParametro, valorParametro);
-			window.location.href = url.href;
-		}
+<script>
+  // 1. Forzar de inmediato los storages por si la SDK los lee al arrancar
+  localStorage.setItem('ysdk_lang', 'en');
+  localStorage.setItem('lang', 'en');
+  sessionStorage.setItem('ysdk_lang', 'en');
+  sessionStorage.setItem('lang', 'en');
 
-	</script>
+  // 2. Interceptar la creación de window.ysdk de forma dinámica
+  let _ysdkInstance = undefined;
+  Object.defineProperty(window, 'ysdk', {
+    get: function() {
+      return _ysdkInstance;
+    },
+    set: function(value) {
+      _ysdkInstance = value;
+      // En cuanto la SDK se asigna a window, modificamos su entorno a inglés
+      if (_ysdkInstance && _ysdkInstance.environment && _ysdkInstance.environment.i18n) {
+        _ysdkInstance.environment.i18n.lang = 'en';
+        console.log('¡[Inyección Head] Idioma de Yandex SDK forzado a "en" con éxito!');
+      }
+    },
+    configurable: true,
+    enumerable: true
+  });
+</script>
 	<meta charset="utf-8">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Survival race | hub 16x</title>
